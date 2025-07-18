@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AGI Web Components</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 5px; }
+    button { cursor: pointer; }
+    #component-container { border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Available Components</h1>
+  <ul id="component-list"></ul>
+  <div id="component-container"></div>
+
+  <script>
+    const components = ['component-header.html', 'component-footer.html'];
+    const list = document.getElementById('component-list');
+    const container = document.getElementById('component-container');
+
+    components.forEach(file => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.textContent = file;
+      btn.addEventListener('click', () => {
+        fetch(file)
+          .then(resp => resp.text())
+          .then(html => { container.innerHTML = html; });
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  </script>
+</body>
+</html>
