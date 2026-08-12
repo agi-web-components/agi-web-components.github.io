@@ -2,36 +2,246 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AGI Web Components</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#11130f">
+  <title>EV Systems Lab — Interactive Vehicle Course</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    ul { list-style: none; padding: 0; }
-    li { margin-bottom: 5px; }
-    button { cursor: pointer; }
-    #component-container { border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      color-scheme: dark;
+      --ink: #f4f2ea;
+      --muted: #9c9e94;
+      --panel: #191b17;
+      --line: #34372e;
+      --acid: #d9ff43;
+      --orange: #ff7b42;
+      --blue: #7fb8ff;
+      --bg: #11130f;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--ink);
+      font-family: "Manrope", sans-serif;
+      background:
+        radial-gradient(circle at 76% 0%, rgba(217,255,67,.09), transparent 25rem),
+        var(--bg);
+    }
+    button { font: inherit; }
+    .shell { max-width: 1480px; margin: auto; padding: 0 42px 54px; }
+
+    header {
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 13px; font-weight: 800; letter-spacing: -.03em; }
+    .brand-mark { width: 31px; height: 31px; display: grid; place-items: center; color: #11130f; background: var(--acid); border-radius: 50%; }
+    .brand-mark svg { width: 17px; }
+    .module-tag, .eyebrow, .mono { font-family: "DM Mono", monospace; text-transform: uppercase; letter-spacing: .09em; }
+    .module-tag { color: var(--muted); font-size: 11px; }
+    .profile { display: flex; align-items: center; gap: 12px; color: #c8c9c2; font-size: 13px; }
+    .profile-ring { width: 34px; height: 34px; border: 1px solid #62665a; border-radius: 50%; display: grid; place-items: center; }
+
+    .hero { padding: 55px 0 36px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 30px; align-items: end; }
+    .eyebrow { color: var(--acid); font-size: 11px; margin-bottom: 16px; }
+    h1 { max-width: 760px; margin: 0; font-size: clamp(42px, 5.5vw, 76px); line-height: .98; letter-spacing: -.065em; font-weight: 600; }
+    .hero-copy { max-width: 340px; margin: 0 0 5px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+
+    .workspace { display: grid; grid-template-columns: minmax(620px, 1.55fr) minmax(330px, .75fr); border: 1px solid var(--line); min-height: 620px; background: rgba(18,20,16,.75); }
+    .vehicle-stage { position: relative; min-height: 620px; border-right: 1px solid var(--line); overflow: hidden; background: linear-gradient(135deg, #191b17, #151712); }
+    .stage-head { position: absolute; z-index: 3; top: 24px; left: 27px; right: 27px; display: flex; justify-content: space-between; align-items: center; }
+    .stage-label { font-size: 11px; color: var(--muted); }
+    .online { color: var(--acid); display: flex; align-items: center; gap: 8px; font-size: 10px; }
+    .online::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--acid); box-shadow: 0 0 12px var(--acid); }
+    .grid-floor { position: absolute; inset: 51% -15% -25%; transform: perspective(450px) rotateX(62deg); transform-origin: top; opacity: .23; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 46px 46px; }
+
+    .car-wrap { position: absolute; inset: 73px 35px 46px; display: grid; place-items: center; }
+    .car { width: min(620px, 85%); aspect-ratio: 1.8; position: relative; filter: drop-shadow(0 30px 28px rgba(0,0,0,.48)); }
+    .car-body { position: absolute; inset: 16% 9% 15%; background: linear-gradient(145deg, #dce0d6, #787e74 55%, #4e534c); clip-path: polygon(22% 0,78% 0,96% 31%,100% 72%,88% 100%,12% 100%,0 72%,4% 31%); border-radius: 32% 32% 18% 18%; box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); }
+    .roof { position: absolute; inset: 22% 26% 30%; background: #282d29; border-radius: 42% 42% 32% 32%; box-shadow: 0 0 0 5px #697068, inset 0 0 30px #0d1614; }
+    .windshield { position: absolute; left: 27%; right: 27%; height: 27%; background: linear-gradient(120deg, #344540 4%, #111917 48%, #273936); border: 2px solid #7d847b; }
+    .windshield.front { bottom: 20%; clip-path: polygon(8% 0,92% 0,100% 100%,0 100%); }
+    .windshield.back { top: 23%; clip-path: polygon(0 0,100% 0,92% 100%,8% 100%); }
+    .center-line { position: absolute; left: 49.7%; top: 25%; bottom: 17%; width: 2px; background: rgba(217,255,67,.34); }
+    .seat { position: absolute; z-index: 2; width: 12%; height: 22%; border: 2px solid #7e857d; border-radius: 35% 35% 20% 20%; background: linear-gradient(90deg, #343a35, #1f2420 50%, #343a35); }
+    .seat::after { content: ""; position: absolute; left: 15%; right: 15%; bottom: -29%; height: 40%; border: 2px solid #717870; border-radius: 8px; background: #292e29; }
+    .s1 { top: 39%; left: 34%; } .s2 { top: 39%; right: 34%; } .s3 { top: 64%; left: 34%; } .s4 { top: 64%; right: 34%; }
+    .tire { position: absolute; z-index: -1; width: 17%; height: 31%; border-radius: 27%; background: repeating-linear-gradient(90deg,#111 0 7px,#30332e 7px 11px); border: 3px solid #070807; box-shadow: inset 0 0 0 7px #262924; }
+    .tire.fl { left: 1%; top: 16%; } .tire.fr { right: 1%; top: 16%; } .tire.rl { left: 1%; bottom: 7%; } .tire.rr { right: 1%; bottom: 7%; }
+    .bumper { position: absolute; bottom: 13%; left: 22%; right: 22%; height: 4%; border-radius: 20px; background: #c8cec4; box-shadow: 0 3px #4f554e; }
+
+    electric-sensor { position: absolute; z-index: 5; display: block; }
+    electric-sensor button { width: 30px; height: 30px; padding: 0; color: var(--acid); background: #181b17; border: 1px solid var(--acid); border-radius: 50%; cursor: pointer; transition: .2s; box-shadow: 0 0 0 5px rgba(217,255,67,.09); }
+    electric-sensor button::after { content: ""; position: absolute; inset: 10px; background: currentColor; border-radius: 50%; }
+    electric-sensor button:hover, electric-sensor button:focus-visible, electric-sensor.active button { color: #111; background: var(--acid); transform: scale(1.15); outline: none; box-shadow: 0 0 0 8px rgba(217,255,67,.13); }
+    electric-sensor.warning button { color: var(--orange); border-color: var(--orange); box-shadow: 0 0 0 5px rgba(255,123,66,.1); animation: pulse 1.6s infinite; }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 10px rgba(255,123,66,0); } }
+    .sensor-tooltip { position: absolute; left: 38px; top: -5px; width: max-content; padding: 8px 10px; font: 10px "DM Mono", monospace; color: #111; background: var(--acid); opacity: 0; transform: translateX(-5px); pointer-events: none; transition: .2s; text-transform: uppercase; letter-spacing: .04em; }
+    electric-sensor:hover .sensor-tooltip, electric-sensor.active .sensor-tooltip { opacity: 1; transform: translateX(0); }
+    electric-sensor.warning .sensor-tooltip { background: var(--orange); }
+    .sensor-window { top: 40%; left: 26%; } .sensor-seat { top: 48%; left: 49%; } .sensor-tire { bottom: 15%; right: 6%; } .sensor-fuel { bottom: 31%; left: 16%; } .sensor-oil { top: 22%; left: 47%; }
+
+    .legend { position: absolute; bottom: 25px; left: 27px; display: flex; gap: 22px; color: var(--muted); font: 9px "DM Mono", monospace; text-transform: uppercase; }
+    .legend span { display: flex; align-items: center; gap: 7px; }
+    .legend i { width: 7px; height: 7px; border-radius: 50%; background: var(--acid); }
+    .legend .warn { background: var(--orange); }
+
+    .course-panel { display: flex; flex-direction: column; min-width: 0; }
+    .progress-head { padding: 27px 28px 23px; border-bottom: 1px solid var(--line); }
+    .progress-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+    .progress-meta strong { color: var(--ink); font-weight: 500; }
+    .progress-bar { height: 3px; margin-top: 14px; background: #30332b; }
+    .progress-bar div { width: 25%; height: 100%; background: var(--acid); transition: width .35s; }
+    .lesson { padding: 29px 28px 24px; border-bottom: 1px solid var(--line); }
+    .lesson .eyebrow { margin-bottom: 13px; }
+    h2 { margin: 0 0 12px; font-size: 28px; letter-spacing: -.04em; font-weight: 600; }
+    .lesson p { min-height: 66px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .status-card { margin: 22px 28px 0; padding: 19px; border: 1px solid var(--line); background: #141612; }
+    .status-title { display: flex; justify-content: space-between; font: 10px "DM Mono", monospace; text-transform: uppercase; color: var(--muted); }
+    .status-title span:last-child { color: var(--acid); }
+    .status-row { display: grid; grid-template-columns: 1fr auto; gap: 9px; margin-top: 19px; align-items: center; }
+    .status-row label { font-size: 12px; }
+    .status-row output { font: 11px "DM Mono", monospace; color: var(--muted); }
+    .meter { grid-column: 1 / -1; height: 4px; background: #30332b; }
+    .meter i { display: block; height: 100%; background: var(--acid); }
+    .meter .low { background: var(--orange); }
+    .event-log { flex: 1; padding: 21px 28px; }
+    .event-log h3 { margin: 0 0 13px; color: var(--muted); font: 10px "DM Mono", monospace; text-transform: uppercase; letter-spacing: .08em; }
+    #events { list-style: none; padding: 0; margin: 0; }
+    #events li { padding: 8px 0; border-top: 1px solid #272a24; color: #b5b7ae; font: 10px "DM Mono", monospace; display: flex; gap: 9px; }
+    #events li::before { content: "→"; color: var(--acid); }
+    .actions { display: flex; gap: 8px; padding: 0 28px 26px; }
+    .action { flex: 1; padding: 12px; border: 1px solid var(--line); color: var(--ink); background: transparent; cursor: pointer; font-size: 11px; }
+    .action.primary { color: #111; background: var(--acid); border-color: var(--acid); font-weight: 700; }
+
+    @media (max-width: 900px) {
+      .shell { padding: 0 20px 30px; }
+      .hero { grid-template-columns: 1fr; padding-top: 40px; }
+      .workspace { grid-template-columns: 1fr; }
+      .vehicle-stage { border-right: 0; border-bottom: 1px solid var(--line); min-height: 510px; }
+      .car-wrap { inset: 65px 12px 40px; }
+    }
+    @media (max-width: 520px) {
+      header { height: 70px; } .module-tag { display: none; } .profile span { display: none; }
+      .hero { padding: 35px 0 28px; } h1 { font-size: 44px; }
+      .vehicle-stage { min-height: 380px; } .legend { display: none; }
+      .sensor-tooltip { display: none; }
+    }
   </style>
 </head>
 <body>
-  <h1>Available Components</h1>
-  <ul id="component-list"></ul>
-  <div id="component-container"></div>
+  <main class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m13 2-8 12h7l-1 8 8-12h-7l1-8Z"/></svg></span> Circuit / Auto</div>
+      <div class="module-tag">Technician course · Module 04</div>
+      <div class="profile"><span>Alex Morgan</span><span class="profile-ring">AM</span></div>
+    </header>
+
+    <section class="hero">
+      <div><div class="eyebrow">Interactive systems lab</div><h1>Know the machine.<br>Master the signal.</h1></div>
+      <p class="hero-copy">Explore the vehicle sensor network. Select a live node to inspect its signal, run diagnostics, and complete the service procedure.</p>
+    </section>
+
+    <section class="workspace" aria-label="Interactive vehicle systems course">
+      <div class="vehicle-stage">
+        <div class="stage-head"><span class="stage-label mono">Vehicle topology / plan view</span><span class="online mono">System online</span></div>
+        <div class="grid-floor"></div>
+        <div class="car-wrap">
+          <div class="car" aria-label="Top view of training vehicle">
+            <div class="tire fl"></div><div class="tire fr"></div><div class="tire rl"></div><div class="tire rr"></div>
+            <div class="car-body"></div><div class="roof"></div>
+            <div class="windshield back"></div><div class="windshield front"></div><div class="center-line"></div>
+            <div class="seat s1"></div><div class="seat s2"></div><div class="seat s3"></div><div class="seat s4"></div><div class="bumper"></div>
+            <electric-sensor class="sensor-window" name="Window position" value="Closed" lesson="Inspect the window position sensor. It reports glass travel and stops the motor when an obstruction is detected."></electric-sensor>
+            <electric-sensor class="sensor-seat" name="Seat occupancy" value="Occupied" lesson="Check the seat occupancy circuit. The pressure mat controls seat-belt reminders and passenger airbag deployment."></electric-sensor>
+            <electric-sensor class="sensor-tire" name="Rear tire pressure" value="24 PSI" warning lesson="Low pressure detected. Replace the tire, then confirm the new TPMS sensor is paired to the vehicle."></electric-sensor>
+            <electric-sensor class="sensor-fuel" name="Fuel level" value="18% · Low" warning lesson="Fuel reserve warning active. Verify the level signal before refueling and inspect the sender circuit for irregular readings."></electric-sensor>
+            <electric-sensor class="sensor-oil" name="Oil level" value="32% · Check" warning lesson="Oil level is approaching minimum. Park on level ground, allow the system to settle, then check and top up with the specified oil."></electric-sensor>
+          </div>
+        </div>
+        <div class="legend"><span><i></i>Nominal signal</span><span><i class="warn"></i>Attention required</span></div>
+      </div>
+
+      <aside class="course-panel">
+        <div class="progress-head">
+          <div class="progress-meta mono"><span>Course progress</span><strong id="progressText">01 / 05</strong></div>
+          <div class="progress-bar"><div id="progressBar"></div></div>
+        </div>
+        <div class="lesson">
+          <div class="eyebrow" id="lessonNumber">Lesson 01 · Live diagnostics</div>
+          <h2 id="lessonTitle">Select a sensor node</h2>
+          <p id="lessonCopy">Start with any highlighted point on the vehicle. Each activation dispatches a sensor event and reveals the related service task.</p>
+        </div>
+        <div class="status-card">
+          <div class="status-title"><span>Live vehicle status</span><span>Connected</span></div>
+          <div class="status-row"><label>Fuel level</label><output>18%</output><div class="meter"><i class="low" style="width:18%"></i></div></div>
+          <div class="status-row"><label>Oil level</label><output>32%</output><div class="meter"><i class="low" style="width:32%"></i></div></div>
+          <div class="status-row"><label>12V system</label><output>13.8 V</output><div class="meter"><i style="width:78%"></i></div></div>
+        </div>
+        <div class="event-log"><h3>Sensor event stream</h3><ul id="events"><li>Waiting for node activation</li></ul></div>
+        <div class="actions"><button class="action" id="reset">Reset lab</button><button class="action primary" id="next">Next sensor →</button></div>
+      </aside>
+    </section>
+  </main>
 
   <script>
-    const components = ['component-header.html', 'component-footer.html'];
-    const list = document.getElementById('component-list');
-    const container = document.getElementById('component-container');
+    class ElectricSensor extends HTMLElement {
+      connectedCallback() {
+        const name = this.getAttribute('name');
+        this.innerHTML = `<button type="button" aria-label="Inspect ${name}"></button><span class="sensor-tooltip">${name}</span>`;
+        this.querySelector('button').addEventListener('click', () => {
+          this.dispatchEvent(new CustomEvent('sensor-trigger', { bubbles: true, detail: {
+            name, value: this.getAttribute('value'), lesson: this.getAttribute('lesson'), warning: this.hasAttribute('warning')
+          }}));
+        });
+      }
+    }
+    customElements.define('electric-sensor', ElectricSensor);
 
-    components.forEach(file => {
-      const li = document.createElement('li');
-      const btn = document.createElement('button');
-      btn.textContent = file;
-      btn.addEventListener('click', () => {
-        fetch(file)
-          .then(resp => resp.text())
-          .then(html => { container.innerHTML = html; });
-      });
-      li.appendChild(btn);
-      list.appendChild(li);
+    const sensors = [...document.querySelectorAll('electric-sensor')];
+    const visited = new Set();
+    let current = -1;
+
+    function activate(sensor) {
+      sensor.querySelector('button').click();
+    }
+
+    document.addEventListener('sensor-trigger', event => {
+      const sensor = event.target;
+      current = sensors.indexOf(sensor);
+      sensors.forEach(node => node.classList.toggle('active', node === sensor));
+      visited.add(sensor);
+      const detail = event.detail;
+      document.getElementById('lessonNumber').textContent = `Lesson ${String(current + 1).padStart(2, '0')} · ${detail.warning ? 'Service required' : 'Live diagnostics'}`;
+      document.getElementById('lessonTitle').textContent = detail.name;
+      document.getElementById('lessonCopy').textContent = detail.lesson;
+      document.getElementById('progressText').textContent = `${String(visited.size).padStart(2, '0')} / 05`;
+      document.getElementById('progressBar').style.width = `${visited.size * 20}%`;
+      const events = document.getElementById('events');
+      if (events.children[0]?.textContent.includes('Waiting')) events.innerHTML = '';
+      const row = document.createElement('li');
+      row.textContent = `${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}  ${detail.name.toUpperCase()}  /  ${detail.value}`;
+      events.prepend(row);
+      while (events.children.length > 3) events.lastChild.remove();
+    });
+
+    document.getElementById('next').addEventListener('click', () => activate(sensors[(current + 1) % sensors.length]));
+    document.getElementById('reset').addEventListener('click', () => {
+      visited.clear(); current = -1; sensors.forEach(node => node.classList.remove('active'));
+      document.getElementById('progressText').textContent = '00 / 05';
+      document.getElementById('progressBar').style.width = '0%';
+      document.getElementById('lessonNumber').textContent = 'Lesson 01 · Live diagnostics';
+      document.getElementById('lessonTitle').textContent = 'Select a sensor node';
+      document.getElementById('lessonCopy').textContent = 'Start with any highlighted point on the vehicle. Each activation dispatches a sensor event and reveals the related service task.';
+      document.getElementById('events').innerHTML = '<li>Waiting for node activation</li>';
     });
   </script>
 </body>
